@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    int status;
     for (i = 0; i < num_commands; i++) {
         pid_t pid = fork();
         if (pid == 0) {  // Child process
@@ -42,14 +43,14 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            // Close all pipe file descriptors
+            // Close all pipe file descriptors in the child process
             for (int j = 0; j < 2 * (num_commands - 1); j++) {
                 close(pipe_fds[j]);
             }
 
             execlp(argv[i + 1], argv[i + 1], (char *)NULL);
             perror("execlp");  // execlp only returns on error
-            exit(EXIT_FAILURE);
+            exit(errno);  // Exit with the errno set by execlp
         } else if (pid < 0) {
             perror("fork");
             exit(EXIT_FAILURE);
@@ -61,10 +62,14 @@ int main(int argc, char *argv[]) {
         close(pipe_fds[i]);
     }
 
-    // Wait for all child processes to finish
+    // Parent waits for all child processes to finish and checks for any errors
+    int exit_status = 0;
     for (i = 0; i < num_commands; i++) {
-        wait(NULL);
+        wait(&status);
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+            exit_status = WEXITSTATUS(status);
+        }
     }
 
-    return 0;
+    return exit_status;
 }
