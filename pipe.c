@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
             }
 
             execlp(argv[i + 1], argv[i + 1], (char *)NULL);
-            perror("execlp");  // execlp only returns on error
+            perror("Wrong argument: ");  // execlp only returns on error
             exit(errno);  // Exit with the errno set by execlp
         } else if (pid < 0) {
             perror("fork");
