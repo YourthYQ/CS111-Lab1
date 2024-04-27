@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
             }
 
             // If not the last command, output to the next pipe
-            if (i < num_commands - 1) {
+            if (i < num_of_commands - 1) {
                 if (dup2(pipe_fds[i * 2 + 1], STDOUT_FILENO) < 0) {
                     perror("dup2");
                     exit(EXIT_FAILURE);
