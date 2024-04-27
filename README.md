@@ -36,7 +36,7 @@ The `pipe` program includes robust error handling to ensure stability and provid
 
 ### Examples of Error Handling
 
-1. No argument
+1. **No argument**
 
    **Input:**
 
@@ -51,7 +51,7 @@ The `pipe` program includes robust error handling to ensure stability and provid
    ```
    This example demonstrates what happens if no argument is specified. The program outputs an error message indicating the correct usage of this program.
 
-2. Wrong argument
+2. **Wrong argument**
 
    **Input:**
 
