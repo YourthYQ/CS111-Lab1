@@ -6,34 +6,29 @@
 #include <errno.h>
 
 int main(int argc, char *argv[]) {
-
-	// No argument in the command line
     if (argc < 2) {
         fprintf(stderr, "Usage: %s [program1] [program2]...\n", argv[0]);
-        return EINVAL;
+        return EINVAL;  // Invalid argument
     }
 
-    int num_of_commands = argc - 1;
+    int num_commands = argc - 1;
     int i;
 
 	// Create an array to hold the file descriptors for all pipes
-    int pipe_fds[2 * (num_of_commands - 1)];
+    int pipe_fds[2 * (num_commands - 1)];
 
     // Create all necessary pipes
-    for (i = 0; i < num_of_commands - 1; i++) {
+    for (i = 0; i < num_commands - 1; i++) {
         if (pipe(pipe_fds + i * 2) < 0) {
-            perror("Pipe");
+            perror("pipe");
             exit(EXIT_FAILURE);
         }
     }
 
-    for (i = 0; i < num_of_commands; i++) {
-
-		// Create a new process
+    int status;
+    for (i = 0; i < num_commands; i++) {
         pid_t pid = fork();
-
         if (pid == 0) {  // Child process
-
             // If not the first command, get input from the previous pipe
             if (i > 0) {
                 if (dup2(pipe_fds[(i - 1) * 2], STDIN_FILENO) < 0) {
@@ -43,37 +38,40 @@ int main(int argc, char *argv[]) {
             }
 
             // If not the last command, output to the next pipe
-            if (i < num_of_commands - 1) {
+            if (i < num_commands - 1) {
                 if (dup2(pipe_fds[i * 2 + 1], STDOUT_FILENO) < 0) {
                     perror("dup2");
                     exit(EXIT_FAILURE);
                 }
             }
 
-            // Close all pipe file descriptors
-            for (int j = 0; j < 2 * (num_of_commands - 1); j++) {
+            // Close all pipe file descriptors in the child process
+            for (int j = 0; j < 2 * (num_commands - 1); j++) {
                 close(pipe_fds[j]);
             }
 
             execlp(argv[i + 1], argv[i + 1], (char *)NULL);
-            perror("Wrong argument: ");  // execlp only returns on error
-            exit(EXIT_FAILURE);
+            perror("execlp");  // execlp only returns on error
+            exit(errno);  // Exit with the errno set by execlp
         } else if (pid < 0) {
             perror("fork");
             exit(EXIT_FAILURE);
         }
-
     }
 
     // Parent closes all pipe file descriptors
-    for (i = 0; i < 2 * (num_of_commands - 1); i++) {
+    for (i = 0; i < 2 * (num_commands - 1); i++) {
         close(pipe_fds[i]);
     }
 
-    // Wait for all child processes to finish
-    for (i = 0; i < num_of_commands; i++) {
-        wait(NULL);
+    // Parent waits for all child processes to finish and checks for any errors
+    int exit_status = 0;
+    for (i = 0; i < num_commands; i++) {
+        wait(&status);
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+            exit_status = WEXITSTATUS(status);
+        }
     }
 
-    return 0;
+    return exit_status;
 }
