@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     // Create all necessary pipes
     for (i = 0; i < num_commands - 1; i++) {
         if (pipe(pipe_fds + i * 2) < 0) {
-            perror("pipe");
+            perror("Failed to create pipe");
             exit(EXIT_FAILURE);
         }
     }
