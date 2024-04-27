@@ -17,17 +17,17 @@ int main(int argc, char *argv[]) {
     int i;
 
 	// Create an array to hold the file descriptors for all pipes
-    int pipe_fds[2 * (num_commands - 1)];
+    int pipe_fds[2 * (num_of_commands - 1)];
 
     // Create all necessary pipes
-    for (i = 0; i < num_commands - 1; i++) {
+    for (i = 0; i < num_of_commands - 1; i++) {
         if (pipe(pipe_fds + i * 2) < 0) {
             perror("Pipe");
             exit(EXIT_FAILURE);
         }
     }
 
-    for (i = 0; i < num_commands; i++) {
+    for (i = 0; i < num_of_commands; i++) {
 
 		// Create a new process
         pid_t pid = fork();
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
             }
 
             // Close all pipe file descriptors
-            for (int j = 0; j < 2 * (num_commands - 1); j++) {
+            for (int j = 0; j < 2 * (num_of_commands - 1); j++) {
                 close(pipe_fds[j]);
             }
 
@@ -62,16 +62,16 @@ int main(int argc, char *argv[]) {
             perror("fork");
             exit(EXIT_FAILURE);
         }
-		
+
     }
 
     // Parent closes all pipe file descriptors
-    for (i = 0; i < 2 * (num_commands - 1); i++) {
+    for (i = 0; i < 2 * (num_of_commands - 1); i++) {
         close(pipe_fds[i]);
     }
 
     // Wait for all child processes to finish
-    for (i = 0; i < num_commands; i++) {
+    for (i = 0; i < num_of_commands; i++) {
         wait(NULL);
     }
 
