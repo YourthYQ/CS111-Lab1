@@ -7,8 +7,8 @@
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s <program1> [program2 ...]\n", argv[0]);
-        return EINVAL;  // Invalid argument
+        perror("No argument");
+		exit(EINVAL);
     }
 
     int num_commands = argc - 1;
