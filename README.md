@@ -1,5 +1,3 @@
-## UID: 206285524
-
 # Pipe Up
 
 A simple C program that simulates the Unix pipe (`|`) functionality to pass output from one process to another. 
